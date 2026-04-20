@@ -17,11 +17,15 @@ class AnnouncementLoading extends AnnouncementState {
 
 class AnnouncementLoaded extends AnnouncementState {
   final List<AnnouncementEntity> announcements;
+  final bool isFromCache; // ← new
 
-  const AnnouncementLoaded({required this.announcements});
+  const AnnouncementLoaded({
+    required this.announcements,
+    this.isFromCache = false,
+  });
 
   @override
-  List<Object?> get props => [announcements];
+  List<Object?> get props => [announcements, isFromCache];
 }
 
 class AnnouncementError extends AnnouncementState {
