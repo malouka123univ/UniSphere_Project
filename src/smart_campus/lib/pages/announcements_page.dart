@@ -23,22 +23,50 @@ class AnnouncementsPage extends StatelessWidget {
           }
 
           if (state is AnnouncementLoaded) {
-            return ListView.builder(
-              itemCount: state.announcements.length,
-              itemBuilder: (context, index) {
-                final item = state.announcements[index];
-                return Card(
-                  margin: const EdgeInsets.all(8),
-                  child: ListTile(
-                    title: Text(item.title),
-                    subtitle: Text(
-                      item.body,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+            return Column(
+              children: [
+                // ← شريط Offline
+                if (state.isFromCache)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.orange,
+                    padding: const EdgeInsets.all(12),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.wifi_off, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'وضع عدم الاتصال - البيانات مخزنة محلياً',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
+                // القائمة
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: state.announcements.length,
+                    itemBuilder: (context, index) {
+                      final item = state.announcements[index];
+                      return Card(
+                        margin: const EdgeInsets.all(8),
+                        child: ListTile(
+                          title: Text(item.title),
+                          subtitle: Text(
+                            item.body,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             );
           }
 
