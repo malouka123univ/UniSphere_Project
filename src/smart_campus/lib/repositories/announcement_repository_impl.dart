@@ -4,39 +4,63 @@ import '../services/api_service.dart';
 import '../models/announcement_model.dart';
 
 // On définit une classe qui "implémente" le contrat (l'interface) AnnouncementRepository
+
+import '../network/network_info.dart';
+import '../../../../services/database_helper.dart';
+
+/// Responsabilité : Décider d'où viennent les données (API ou SQLite)
+/// Concept OS : Offline-First Architecture
 class AnnouncementRepositoryImpl implements AnnouncementRepository {
-  // On déclare le service API qui sera utilisé pour récupérer les données brutes
   final ApiService apiService;
+  final NetworkInfo networkInfo; // ← Nouveau : vérifie la connexion
+  final DatabaseHelper databaseHelper; // ← Nouveau : base de données locale
 
-  // Le constructeur : il exige qu'on lui fournisse un ApiService pour fonctionner
-  const AnnouncementRepositoryImpl({required this.apiService});
+  const AnnouncementRepositoryImpl({
+    required this.apiService,
+    required this.networkInfo,
+    required this.databaseHelper,
+  });
 
-  // On réécrit (@override) la méthode définie dans la classe abstraite
   @override
   Future<List<AnnouncementEntity>> getAnnouncements() async {
-    // 1. On appelle le service pour récupérer la liste JSON brute depuis Internet
-    // "await" met la fonction en pause jusqu'à ce que les données arrivent
-    final List<dynamic> jsonList = await apiService.fetchPosts();
+    /// Étape 1 : Vérifier si l'appareil est connecté à Internet
+    final isOnline = await networkInfo.isConnected;
 
-    // 2. Transformation : JSON brut -> AnnouncementModel (Couche Data)
-    // .map() parcourt chaque élément de la liste pour le transformer
-    final List<AnnouncementModel> models = jsonList
-        .map((json) => AnnouncementModel.fromJson(json as Map<String, dynamic>))
-        .toList(); // On reconvertit le résultat en une vraie Liste Dart
+    if (isOnline) {
+      try {
+        /// MODE EN LIGNE : Récupérer depuis l'API REST
+        final List<dynamic> jsonList = await apiService.fetchPosts();
+        final models = jsonList
+            .map(
+              (json) =>
+                  AnnouncementModel.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
 
-    // 3. Transformation : AnnouncementModel -> AnnouncementEntity (Couche Domain)
-    // On convertit les modèles techniques en "Entités" pures pour l'application
-    final List<AnnouncementEntity> entities = models
-        .map(
-          (model) => AnnouncementEntity(
-            id: model.id,
-            title: model.title,
-            body: model.body,
-          ),
-        )
+        /// Stratégie Cache : Sauvegarder dans SQLite pour usage futur hors ligne
+        await databaseHelper.cacheAnnouncements(models);
+
+        /// Mapper les Models vers des Entities (propre, sans JSON)
+        return models
+            .map(
+              (m) => AnnouncementEntity(id: m.id, title: m.title, body: m.body),
+            )
+            .toList();
+      } catch (e) {
+        /// Si l'API échoue malgré la connexion → Fallback sur le cache local
+        return await _getFromCache();
+      }
+    } else {
+      /// MODE HORS LIGNE : Lire uniquement depuis SQLite
+      return await _getFromCache();
+    }
+  }
+
+  /// Méthode privée : Récupérer les données depuis la base locale
+  Future<List<AnnouncementEntity>> _getFromCache() async {
+    final models = await databaseHelper.getCachedAnnouncements();
+    return models
+        .map((m) => AnnouncementEntity(id: m.id, title: m.title, body: m.body))
         .toList();
-
-    // 4. On renvoie la liste finale d'entités, prête à être utilisée par le BLoC
-    return entities;
   }
 }
