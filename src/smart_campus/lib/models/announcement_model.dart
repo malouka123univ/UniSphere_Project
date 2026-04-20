@@ -10,6 +10,8 @@ class AnnouncementModel {
   });
 
   /// JSON (Map) → Object
+  /// // Convertit le format JSON (Map) venant d'Internet en un objet Dart utilisable.
+  // C'est ici qu'on "traduit" les données brutes pour l'application.
   factory AnnouncementModel.fromJson(Map<String, dynamic> json) {
     return AnnouncementModel(
       id: json['id'] as int,
