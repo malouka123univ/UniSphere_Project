@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/announcement_bloc.dart';
 import '../blocs/announcement_event.dart';
 import '../blocs/announcement_state.dart';
+import '../features/events/presentation/pages/add_event_page.dart';
+import '../features/map/presentation/pages/campus_map_page.dart';
+// أضف استيراد صفحة الخريطة هنا
 
 class AnnouncementsPage extends StatelessWidget {
   const AnnouncementsPage({super.key});
@@ -10,7 +13,21 @@ class AnnouncementsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('University advertisements')),
+      appBar: AppBar(
+        title: const Text('Campus Announcements'),
+        actions: [
+          // زر للانتقال للخريطة (Location) لتجربتها
+          IconButton(
+            icon: const Icon(Icons.map),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CampusMapPage()),
+              );
+            },
+          ),
+        ],
+      ),
       body: BlocBuilder<AnnouncementBloc, AnnouncementState>(
         builder: (context, state) {
           if (state is AnnouncementInitial) {
@@ -23,22 +40,48 @@ class AnnouncementsPage extends StatelessWidget {
           }
 
           if (state is AnnouncementLoaded) {
-            return ListView.builder(
-              itemCount: state.announcements.length,
-              itemBuilder: (context, index) {
-                final item = state.announcements[index];
-                return Card(
-                  margin: const EdgeInsets.all(8),
-                  child: ListTile(
-                    title: Text(item.title),
-                    subtitle: Text(
-                      item.body,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+            return Column(
+              children: [
+                if (state.isFromCache)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.orange,
+                    padding: const EdgeInsets.all(12),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.wifi_off, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'وضع عدم الاتصال - البيانات مخزنة محلياً',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: state.announcements.length,
+                    itemBuilder: (context, index) {
+                      final item = state.announcements[index];
+                      return Card(
+                        margin: const EdgeInsets.all(8),
+                        child: ListTile(
+                          title: Text(item.title),
+                          subtitle: Text(
+                            item.body,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             );
           }
 
@@ -66,6 +109,16 @@ class AnnouncementsPage extends StatelessWidget {
 
           return const SizedBox.shrink();
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            // تم إزالة const من هنا لأن الصفحة غالباً غير ثابتة
+            MaterialPageRoute(builder: (context) => const AddEventPage()),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
