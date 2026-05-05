@@ -31,6 +31,12 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
+
+    // DISPATCH EVENT HERE: Trigger the API call immediately when page loads
+    // This ensures fetchPosts() runs right away
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AnnouncementBloc>().add(const LoadAnnouncements());
+    });
   }
 
   @override
@@ -46,8 +52,15 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
         bottom: false,
         child: BlocConsumer<AnnouncementBloc, AnnouncementState>(
           listener: (context, state) {
-            if (state is AnnouncementInitial) {
-              context.read<AnnouncementBloc>().add(const LoadAnnouncements());
+            // Only handle error side effects here (snackbars, etc.)
+            if (state is AnnouncementError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.errorContainer,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
             }
           },
           builder: (context, state) {
@@ -92,9 +105,8 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
   }
 
   Widget _buildFilterChips(AnnouncementState state) {
-    final selectedFilter = state is AnnouncementLoaded
-        ? state.selectedFilter
-        : 'All';
+    final selectedFilter =
+        state is AnnouncementLoaded ? state.selectedFilter : 'All';
 
     return Container(
       height: 48,
@@ -117,9 +129,12 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
               borderRadius: BorderRadius.circular(9999),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.surfaceContainerHigh,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(9999),
                   boxShadow: isSelected
                       ? [
@@ -134,7 +149,9 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
                 child: Text(
                   filter,
                   style: AppTypography.labelMedium.copyWith(
-                    color: isSelected ? AppColors.onPrimary : AppColors.onSurfaceVariant,
+                    color: isSelected
+                        ? AppColors.onPrimary
+                        : AppColors.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -180,7 +197,9 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  context.read<AnnouncementBloc>().add(const LoadAnnouncements());
+                  context
+                      .read<AnnouncementBloc>()
+                      .add(const LoadAnnouncements());
                 },
                 child: const Text('Try again'),
               ),
@@ -197,7 +216,8 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
           ? allAnnouncements
           : allAnnouncements.where((e) {
               final categories = ['Safety', 'Academic', 'Events', 'General'];
-              return categories[e.id % categories.length] == state.selectedFilter;
+              return categories[e.id % categories.length] ==
+                  state.selectedFilter;
             }).toList();
 
       if (filtered.isEmpty) {
@@ -206,9 +226,8 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
         );
       }
 
-      final uiModels = filtered
-          .map((e) => AnnouncementUiModel.fromEntity(e))
-          .toList();
+      final uiModels =
+          filtered.map((e) => AnnouncementUiModel.fromEntity(e)).toList();
 
       return SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -267,7 +286,8 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
                       shape: BoxShape.circle,
                       color: AppColors.tertiaryFixedDim,
                     ),
-                    child: const Icon(Icons.close, size: 16, color: Colors.white),
+                    child:
+                        const Icon(Icons.close, size: 16, color: Colors.white),
                   ),
                 ),
               ],
@@ -333,7 +353,8 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.school_outlined, color: AppColors.primary, size: 28),
+                    const Icon(Icons.school_outlined,
+                        color: AppColors.primary, size: 28),
                     const SizedBox(width: 12),
                     Text(
                       'UniSphere',
@@ -438,13 +459,17 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
               Icon(
                 icon,
                 size: 24,
-                color: isActive ? AppColors.primaryContainer : AppColors.onSurfaceVariant,
+                color: isActive
+                    ? AppColors.primaryContainer
+                    : AppColors.onSurfaceVariant,
               ),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: AppTypography.labelSmall.copyWith(
-                  color: isActive ? AppColors.primaryContainer : AppColors.onSurfaceVariant,
+                  color: isActive
+                      ? AppColors.primaryContainer
+                      : AppColors.onSurfaceVariant,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
