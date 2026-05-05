@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/announcement_bloc.dart';
 import '../blocs/announcement_event.dart';
 import '../blocs/announcement_state.dart';
+import '../features/events/presentation/pages/add_event_page.dart';
+import '../features/map/presentation/pages/campus_map_page.dart';
+// أضف استيراد صفحة الخريطة هنا
 
 class AnnouncementsPage extends StatelessWidget {
   const AnnouncementsPage({super.key});
@@ -10,7 +13,21 @@ class AnnouncementsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(' testing')),
+      appBar: AppBar(
+        title: const Text('Campus Announcements'),
+        actions: [
+          // زر للانتقال للخريطة (Location) لتجربتها
+          IconButton(
+            icon: const Icon(Icons.map),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CampusMapPage()),
+              );
+            },
+          ),
+        ],
+      ),
       body: BlocBuilder<AnnouncementBloc, AnnouncementState>(
         builder: (context, state) {
           if (state is AnnouncementInitial) {
@@ -25,7 +42,6 @@ class AnnouncementsPage extends StatelessWidget {
           if (state is AnnouncementLoaded) {
             return Column(
               children: [
-                // ← شريط Offline
                 if (state.isFromCache)
                   Container(
                     width: double.infinity,
@@ -46,7 +62,6 @@ class AnnouncementsPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                // القائمة
                 Expanded(
                   child: ListView.builder(
                     itemCount: state.announcements.length,
@@ -94,6 +109,16 @@ class AnnouncementsPage extends StatelessWidget {
 
           return const SizedBox.shrink();
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            // تم إزالة const من هنا لأن الصفحة غالباً غير ثابتة
+            MaterialPageRoute(builder: (context) => const AddEventPage()),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
