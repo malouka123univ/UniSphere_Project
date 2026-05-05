@@ -7,13 +7,13 @@ import '../repositories/announcement_repository_impl.dart';
 import '../usecases/get_announcements.dart';
 import '../blocs/announcement_bloc.dart';
 import '../pages/announcements_page.dart';
+import '../theme/app_theme.dart';
 
 class SmartCampusApp extends StatelessWidget {
   const SmartCampusApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // تعريف الخدمات والاعتمادات
     final apiService = ApiService();
     final networkInfo = NetworkInfo();
     final databaseHelper = DatabaseHelper.instance;
@@ -31,13 +31,11 @@ class SmartCampusApp extends StatelessWidget {
     return BlocProvider(
       create: (_) => AnnouncementBloc(
         getAnnouncementsUseCase: getAnnouncementsUseCase,
-        networkInfo: networkInfo,
       ),
       child: MaterialApp(
-        title: 'Smart Campus',
+        title: 'UniSphere',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-        // يمكنك لاحقاً تغيير هذه لتكون صفحة رئيسية تجمع كل الأقسام
+        theme: AppTheme.lightTheme,
         home: const AnnouncementsPage(),
       ),
     );

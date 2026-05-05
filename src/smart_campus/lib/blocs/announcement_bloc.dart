@@ -7,44 +7,41 @@ import '../entities/announcement_entity.dart'; // Import ajouté
 
 class AnnouncementBloc extends Bloc<AnnouncementEvent, AnnouncementState> {
   final GetAnnouncementsUseCase getAnnouncementsUseCase;
-  final NetworkInfo networkInfo;
 
-  AnnouncementBloc({
-    required this.getAnnouncementsUseCase,
-    required this.networkInfo,
-  }) : super(const AnnouncementInitial()) {
-    // Enregistrement des gestionnaires d'événements
-    on<LoadAnnouncements>(_onLoad);
-    on<AddAnnouncement>(_onAddAnnouncement); // Déplacé ici
+
+  AnnouncementBloc({required this.getAnnouncementsUseCase})
+    : super(const AnnouncementInitial()) {
+    on<LoadAnnouncements>(_onLoadAnnouncements);
+    on<FilterChanged>(_onFilterChanged);
   }
 
-  Future<void> _onLoad(
+  Future<void> _onLoadAnnouncements(
     LoadAnnouncements event,
     Emitter<AnnouncementState> emit,
   ) async {
     emit(const AnnouncementLoading());
     try {
       final announcements = await getAnnouncementsUseCase();
-      final isOnline = await networkInfo.isConnected;
+      emit(AnnouncementLoaded(announcements: announcements));
+    } catch (error) {
       emit(
-        AnnouncementLoaded(
-          announcements: announcements,
-          isFromCache: !isOnline,
+        const AnnouncementError(
+          message:
+              'Failed to load announcements. Please check your connection.',
         ),
       );
-    } catch (error) {
-      emit(const AnnouncementError(message: 'Error in loading'));
     }
   }
 
-  void _onAddAnnouncement(
-    AddAnnouncement event,
-    Emitter<AnnouncementState> emit,
-  ) {
-    List<AnnouncementEntity> currentList = [];
-
+  void _onFilterChanged(FilterChanged event, Emitter<AnnouncementState> emit) {
     if (state is AnnouncementLoaded) {
-      currentList = (state as AnnouncementLoaded).announcements;
+      final currentState = state as AnnouncementLoaded;
+      emit(
+        AnnouncementLoaded(
+          announcements: currentState.announcements,
+          selectedFilter: event.filter,
+        ),
+      );
     }
 
     final updatedList = [event.announcement, ...currentList];

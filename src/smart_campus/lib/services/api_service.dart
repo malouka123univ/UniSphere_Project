@@ -1,26 +1,34 @@
+// lib/data/services/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  //	Utilisation du protocole HTTP/REST
-  //Fake Online REST API(fake server)
+  // REMOVE THE TRAILING SPACE ↓↓↓↓↓↓↓↓↓
   static const String baseUrl = 'https://jsonplaceholder.typicode.com';
 
   Future<List<dynamic>> fetchPosts() async {
-    //// Récupère la liste des publications (posts) depuis l'API de manière asynchrone.
-    // Envoie la requête et attend la réponse du serveur de manière asynchrone
-    final response = await http
-        // Effectue un appel GET vers l'URL spécifiée (convertie en objet Uri)
-        //La méthode HTTP pour récupérer des données.
-        .get(Uri.parse('$baseUrl/posts'))
-        //le temps exact pour app attender avant dire que  il ya un probleme de connex
-        .timeout(const Duration(seconds: 10));
+    print("🟡 [ApiService] call fetchPosts");
+    print("🟡 [ApiService] Sending HTTP GET to $baseUrl/posts");
 
-    if (response.statusCode == 200) {
-      //TRANSFRE LES DONNER VER LIST OU MAPPING PIR TRITER
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('HTTP ${response.statusCode}');
+    try {
+      final response = await http
+          .get(Uri.parse('$baseUrl/posts'))
+          .timeout(const Duration(seconds: 10));
+
+      print("🟢 [ApiService] Response received: ${response.statusCode}");
+      print("🟢 [ApiService] Body length: ${response.body.length}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        print("🟢 [ApiService] Decoded ${decoded.length} items");
+        return decoded;
+      } else {
+        print("🔴 [ApiService] HTTP Error: ${response.statusCode}");
+        throw Exception('HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      print("🔴 [ApiService] Request failed: $e");
+      rethrow;
     }
   }
 }
