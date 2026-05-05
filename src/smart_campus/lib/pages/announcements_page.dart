@@ -5,10 +5,11 @@ import '../blocs/announcement_event.dart';
 import '../blocs/announcement_state.dart';
 import '../features/events/presentation/pages/add_event_page.dart';
 import '../features/map/presentation/pages/campus_map_page.dart';
-// أضف استيراد صفحة الخريطة هنا
 
 class AnnouncementsPage extends StatelessWidget {
   const AnnouncementsPage({super.key});
+
+  final bool isAdmin = true;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,6 @@ class AnnouncementsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Campus Announcements'),
         actions: [
-          // زر للانتقال للخريطة (Location) لتجربتها
           IconButton(
             icon: const Icon(Icons.map),
             onPressed: () {
@@ -53,7 +53,7 @@ class AnnouncementsPage extends StatelessWidget {
                         Icon(Icons.wifi_off, color: Colors.white, size: 18),
                         SizedBox(width: 8),
                         Text(
-                          'وضع عدم الاتصال - البيانات مخزنة محلياً',
+                          'Offline Mode - Local Data Displayed',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -110,16 +110,18 @@ class AnnouncementsPage extends StatelessWidget {
           return const SizedBox.shrink();
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            // تم إزالة const من هنا لأن الصفحة غالباً غير ثابتة
-            MaterialPageRoute(builder: (context) => const AddEventPage()),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddEventPage()),
+                );
+              },
+              backgroundColor: Colors.blueAccent,
+              child: const Icon(Icons.add_moderator),
+            )
+          : null,
     );
   }
 }

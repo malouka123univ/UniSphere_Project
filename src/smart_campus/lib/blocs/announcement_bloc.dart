@@ -13,37 +13,42 @@ class AnnouncementBloc extends Bloc<AnnouncementEvent, AnnouncementState> {
     required this.getAnnouncementsUseCase,
     required this.networkInfo,
   }) : super(const AnnouncementInitial()) {
-
     // Enregistrement des gestionnaires d'événements
     on<LoadAnnouncements>(_onLoad);
     on<AddAnnouncement>(_onAddAnnouncement); // Déplacé ici
   }
 
-  Future<void> _onLoad(LoadAnnouncements event, Emitter<AnnouncementState> emit) async {
+  Future<void> _onLoad(
+    LoadAnnouncements event,
+    Emitter<AnnouncementState> emit,
+  ) async {
     emit(const AnnouncementLoading());
     try {
       final announcements = await getAnnouncementsUseCase();
       final isOnline = await networkInfo.isConnected;
-      emit(AnnouncementLoaded(
-        announcements: announcements,
-        isFromCache: !isOnline,
-      ));
+      emit(
+        AnnouncementLoaded(
+          announcements: announcements,
+          isFromCache: !isOnline,
+        ),
+      );
     } catch (error) {
       emit(const AnnouncementError(message: 'Error in loading'));
     }
   }
 
-  void _onAddAnnouncement(AddAnnouncement event, Emitter<AnnouncementState> emit) {
-    if (state is AnnouncementLoaded) {
-      final currentState = state as AnnouncementLoaded;
-      // Création d'une nouvelle liste avec l'élément ajouté au début
-      final updatedList = List<AnnouncementEntity>.from(currentState.announcements)
-        ..insert(0, event.announcement);
+  void _onAddAnnouncement(
+    AddAnnouncement event,
+    Emitter<AnnouncementState> emit,
+  ) {
+    List<AnnouncementEntity> currentList = [];
 
-      emit(AnnouncementLoaded(
-        announcements: updatedList,
-        isFromCache: currentState.isFromCache,
-      ));
+    if (state is AnnouncementLoaded) {
+      currentList = (state as AnnouncementLoaded).announcements;
     }
+
+    final updatedList = [event.announcement, ...currentList];
+
+    emit(AnnouncementLoaded(announcements: updatedList, isFromCache: true));
   }
 }
