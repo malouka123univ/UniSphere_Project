@@ -11,9 +11,13 @@ import '../theme/app_typography.dart';
 import '../widgets/announcement_card.dart';
 import '../widgets/skeleton_card.dart';
 // أضف استيراد صفحة الخريطة هنا
+import '../features/events/presentation/pages/add_event_page.dart';
+import '../features/map/presentation/pages/campus_map_page.dart';
 
 class AnnouncementsPage extends StatefulWidget {
   const AnnouncementsPage({super.key});
+
+  final bool isAdmin = true;
 
   @override
   State<AnnouncementsPage> createState() => _AnnouncementsPageState();
@@ -60,6 +64,15 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
                   backgroundColor: AppColors.errorContainer,
                   behavior: SnackBarBehavior.floating,
                 ),
+      appBar: AppBar(
+        title: const Text('Campus Announcements'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CampusMapPage()),
               );
             }
           },
@@ -142,6 +155,35 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
                             color: AppColors.primary.withOpacity(0.2),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
+      body: BlocBuilder<AnnouncementBloc, AnnouncementState>(
+        builder: (context, state) {
+          if (state is AnnouncementInitial) {
+            context.read<AnnouncementBloc>().add(const LoadAnnouncements());
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is AnnouncementLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is AnnouncementLoaded) {
+            return Column(
+              children: [
+                if (state.isFromCache)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.orange,
+                    padding: const EdgeInsets.all(12),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.wifi_off, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Offline Mode - Local Data Displayed',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
                         ]
                       : null,
@@ -477,6 +519,18 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
           ),
         ),
       ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddEventPage()),
+                );
+              },
+              backgroundColor: Colors.blueAccent,
+              child: const Icon(Icons.add_moderator),
+            )
+          : null,
     );
   }
 }

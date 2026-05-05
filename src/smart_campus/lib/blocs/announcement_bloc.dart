@@ -8,6 +8,7 @@ import '../entities/announcement_entity.dart'; // Import ajouté
 class AnnouncementBloc extends Bloc<AnnouncementEvent, AnnouncementState> {
   final GetAnnouncementsUseCase getAnnouncementsUseCase;
 
+
   AnnouncementBloc({required this.getAnnouncementsUseCase})
     : super(const AnnouncementInitial()) {
     on<LoadAnnouncements>(_onLoadAnnouncements);
@@ -42,5 +43,9 @@ class AnnouncementBloc extends Bloc<AnnouncementEvent, AnnouncementState> {
         ),
       );
     }
+
+    final updatedList = [event.announcement, ...currentList];
+
+    emit(AnnouncementLoaded(announcements: updatedList, isFromCache: true));
   }
 }
