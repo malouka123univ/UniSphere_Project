@@ -10,7 +10,7 @@ class AnnouncementsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(' testing advertisements')),
+      appBar: AppBar(title: const Text(' testing')),
       body: BlocBuilder<AnnouncementBloc, AnnouncementState>(
         builder: (context, state) {
           if (state is AnnouncementInitial) {
