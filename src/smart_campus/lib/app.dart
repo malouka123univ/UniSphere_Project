@@ -31,7 +31,6 @@ class SmartCampusApp extends StatelessWidget {
     return BlocProvider(
       create: (_) => AnnouncementBloc(
         getAnnouncementsUseCase: getAnnouncementsUseCase,
-        networkInfo: networkInfo,
       ),
       child: MaterialApp(
         title: 'UniSphere',
